@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>116年資料庫訂購需求調查</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --primary: #1a3a5c;
+    --accent: #c8452a;
+    --accent2: #e8a020;
+    --text: #1c1c1c;
+    --muted: #888;
+    --border: #ddd8cf;
+    --points-bg: #1a3a5c;
+    --points-fg: #ffffff;
+    --tag-new: #c8452a;
+    --tag-new-bg: #fdeee9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 120px;
+  }
+
+  /* Sticky Header */
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .sticky-header h1 {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+  .points-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    color: var(--primary);
+    border-radius: 10px;
+    padding: 6px 14px;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+  .points-badge .used {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .points-badge .used.over {
+    color: var(--accent);
+  }
+  .points-badge .label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    position: relative;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--accent2);
+    transition: width 0.3s ease;
+    max-width: 100%;
+  }
+  .progress-bar.over {
+    background: var(--accent);
+  }
+
+  /* Hero */
+  .hero {
+    background: var(--primary);
+    color: white;
+    padding: 24px 16px 28px;
+    border-bottom: 3px solid var(--accent);
+  }
+  .hero-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    letter-spacing: 0.01em;
+  }
+  .hero-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.8;
+  }
+  .hero-meta strong { color: var(--accent2); }
+
+  /* Instructions */
+  .instructions {
+    margin: 16px;
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--accent2);
+    font-size: 13px;
+    line-height: 1.8;
+    color: #444;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .instructions ol { padding-left: 18px; }
+  .instructions li { margin-bottom: 4px; }
+  .new-note {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--tag-new-bg);
+    border-radius: 8px;
+    color: var(--tag-new);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Section label */
+  .section-label {
+    margin: 20px 16px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1.5px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card.active {
+    border-color: var(--primary);
+    box-shadow: 0 2px 10px rgba(26,58,92,0.12);
+  }
+  .card.new-item {
+    border-color: rgba(200,69,42,0.3);
+    background: linear-gradient(135deg, #fff 90%, #fdeee9 100%);
+  }
+  .card.new-item.active {
+    border-color: var(--accent);
+    box-shadow: 0 2px 10px rgba(200,69,42,0.15);
+  }
+
+  .card-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 24px;
+    flex-shrink: 0;
+  }
+
+  .card-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .card-name {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .tag-lang { background: #e8f0fb; color: #2a5ab0; }
+  .tag-college { background: #e8f5ec; color: #2a7a3a; }
+  .tag-price { background: #fef3e2; color: #9a5f00; }
+  .tag-new { background: var(--tag-new-bg); color: var(--tag-new); }
+
+  /* Stepper */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .stepper button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--bg);
+    color: var(--primary);
+    font-size: 20px;
+    font-weight: 300;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .stepper button:active {
+    transform: scale(0.9);
+    background: #ddd8cf;
+  }
+  .stepper button.minus { font-size: 24px; }
+  .stepper .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    min-width: 28px;
+    text-align: center;
+    color: var(--primary);
+  }
+  .stepper .val.nonzero { color: var(--primary); font-weight: 700; }
+
+  /* Sticky submit */
+  .submit-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    z-index: 200;
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .submit-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .submit-info .remain {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .submit-info .remain.over { color: var(--accent); }
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .submit-btn:not(:disabled):active { transform: scale(0.98); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--primary);
+  }
+  .modal-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .modal-item:last-child { border-bottom: none; }
+  .modal-item-name { flex: 1; padding-right: 12px; color: #444; }
+  .modal-item-pts {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 32px;
+    text-align: right;
+  }
+  .modal-total {
+    margin-top: 12px;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .modal-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+  }
+  .modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-cancel { background: var(--bg); color: var(--text); }
+  .btn-confirm { background: var(--accent); color: white; }
+
+  /* Success */
+  .success-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--primary);
+    z-index: 400;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 32px;
+    text-align: center;
+  }
+  .success-screen.show { display: flex; }
+  .success-icon { font-size: 64px; margin-bottom: 20px; }
+  .success-screen h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+  .success-screen p { font-size: 15px; color: rgba(255,255,255,0.7); line-height: 1.7; }
+  .success-detail {
+    margin-top: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 320px;
+    text-align: left;
+    font-size: 13px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .success-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .success-detail-item:last-child { border-bottom: none; }
+
+  /* Respondent info */
+  .respondent-section {
+    margin: 16px 16px 0;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--primary);
+  }
+  .respondent-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 12px; }
+  .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .field-wrap label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.03em; }
+  .field-wrap label span { color: var(--accent); }
+  .field-wrap input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+  .field-wrap input:focus { border-color: var(--primary); background: white; }
+  .field-wrap input.error { border-color: var(--accent); background: #fff8f7; }
+  .field-error { font-size: 11px; color: var(--accent); display: none; }
+  .field-error.show { display: block; }
+  .modal-respondent {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #444;
+  }
+  .modal-respondent strong { color: var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- Sticky Header -->
+<div class="sticky-header">
+  <h1>臺中科技大學圖書館<br>116年資料庫訂購需求調查</h1>
+  <div class="points-badge">
+    <span class="used" id="usedPts">0</span>
+    <span class="label">已使用 / 40 票</span>
+  </div>
+</div>
+<div class="progress-wrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-title">116 年資料庫採購投票</div>
+  <div class="hero-meta">
+    116年本校圖書諮詢委員會將於五月上旬召開，本問卷將統計本系教師的資料庫訂購偏好，排序前20名的資料庫將成為本系的建議購置清單，在此問卷中每位老師共有 <strong>40點</strong>，可自由分配給屬意的資料庫，獲得點數越高的資料庫代表愈優先建議採購。各資料庫適用領域與預估價格均顯示於選項中。
+  </div>
+</div>
+
+<!-- Instructions -->
+<div class="instructions">
+  <ol>
+    <li>共有 40 個資料庫選項，您有 <strong>40 票</strong>可分配</li>
+    <li>每個資料庫可投 0 票或多票，無單項上限</li>
+    <li>所有選項票數加總<strong>必須恰好等於 40 票</strong></li>
+    <li>請於2026年5月4日中午12點前填寫完畢</li>
+  </ol>
+  <div class="new-note">⚠ 序號 36–40（標示「新」）為 115 年期間未訂購／未使用之資料庫，目前無使用統計數據</div>
+</div>
+
+<!-- Respondent Info -->
+<div class="respondent-section">
+  <h3>填答人資料</h3>
+  <div class="field-group">
+    <div class="field-wrap">
+      <label>姓名 <span>*</span></label>
+      <input type="text" id="inputName" placeholder="請輸入您的姓名" autocomplete="name">
+      <span class="field-error" id="errName">請填寫姓名</span>
+    </div>
+    <div class="field-wrap">
+      <label>電子郵件 <span>*</span></label>
+      <input type="email" id="inputEmail" placeholder="請輸入您的電子郵件" autocomplete="email" inputmode="email">
+      <span class="field-error" id="errEmail">請填寫有效的電子郵件地址</span>
+    </div>
+  </div>
+</div>
+
+<!-- Cards will be injected here -->
+<div id="cardsContainer"></div>
+
+<!-- Submit bar -->
+<div class="submit-bar">
+  <div class="submit-info">
+    <span>剩餘票數</span>
+    <span class="remain" id="remainPts">40</span>
+  </div>
+  <button class="submit-btn" id="submitBtn" disabled>確認送出投票</button>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>📋 確認投票內容</h2>
+    <div class="modal-respondent" id="modalRespondent"></div>
+    <div id="modalItems"></div>
+    <div class="modal-total">
+      <span>合計票數</span>
+      <span id="modalTotal">0 票</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnCancel">返回修改</button>
+      <button class="btn-confirm" id="btnConfirm">確認送出</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">🎉</div>
+  <h2>投票完成！</h2>
+  <p>感謝您的投票<br>您的選票已成功送出</p>
+  <div class="success-detail" id="successDetail"></div>
+</div>
+
+<script>
+const databases = [
+  { id: 1, name: "ACM Digital Library Open", lang: "西文", college: "資通、智產", price: 22, isNew: false },
+  { id: 2, name: "Academic Search Elite (ASE)-EBSCO", lang: "西文", college: "綜合", price: 29, isNew: false },
+  { id: 3, name: "AEB Walking Library 電子雜誌資料庫", lang: "中文", college: "綜合", price: 15, isNew: false },
+  { id: 4, name: "CINAHL Plus with Full Text-EBSCO", lang: "西文", college: "中護", price: 42, isNew: false },
+  { id: 5, name: "The Cochrane Library", lang: "西文", college: "中護", price: 15, isNew: false },
+  { id: 6, name: "DIGITIMES 科技網資料庫（基本版）", lang: "中文", college: "綜合、資通、智產", price: 17, isNew: false },
+  { id: 7, name: "Emerald Journals－數位圖書資訊學", lang: "西文", college: "資通、智產、綜合", price: 13, isNew: false },
+  { id: 8, name: "Emerald Journals－資訊管理、行銷、餐旅暨休閒管理", lang: "西文", college: "資通、商、智產", price: 38, isNew: false },
+  { id: 9, name: "Emerald Journals－商業/管理/決策", lang: "西文", college: "商、智產", price: 40, isNew: false },
+  { id: 10, name: "IEEE Xplore Library", lang: "西文", college: "資通、智產", price: 150, isNew: false },
+  { id: 11, name: "Journals 學術期刊及 Theses 學位論文（華藝）", lang: "中文", college: "綜合", price: 57, isNew: false },
+  { id: 12, name: "JSTOR 資料庫", lang: "西文", college: "綜合、設計", price: 13, isNew: false },
+  { id: 13, name: "KMCC 光華管理個案收錄庫", lang: "中文", college: "商、資通、智產", price: 13, isNew: false },
+  { id: 14, name: "KONO Libraries 精選誌", lang: "中文", college: "綜合", price: 13, isNew: false },
+  { id: 15, name: "MEDLINE with Full Text-EBSCO", lang: "西文", college: "中護", price: 28, isNew: false },
+  { id: 16, name: "ProQuest Central Premium & One Visual Arts & Design", lang: "西文", college: "綜合、設計、中護", price: 95, isNew: false },
+  { id: 17, name: "ProQuest One Health & Nursing", lang: "西文", college: "中護", price: 51, isNew: false },
+  { id: 18, name: "ScienceDirect (SDOL)", lang: "西文", college: "綜合", price: 244, isNew: false },
+  { id: 19, name: "Taylor & Francis SSH Library 人文社會科學電子期刊", lang: "西文", college: "商、語文、綜合", price: 65, isNew: false },
+  { id: 20, name: "Tumble Book Library", lang: "西文", college: "語文", price: 4, isNew: false },
+  { id: 21, name: "UpToDate Anywhere", lang: "西文", college: "中護", price: 53, isNew: false },
+  { id: 22, name: "天下雜誌群知識庫（七庫）", lang: "中文", college: "綜合", price: 16, isNew: false },
+  { id: 23, name: "台經院產經資料庫", lang: "中文", college: "商、資通、智產", price: 30, isNew: false },
+  { id: 24, name: "哈佛商業評論全球繁體中文版", lang: "中文", college: "綜合、商、智產", price: 7, isNew: false },
+  { id: 25, name: "中國期刊全文數據庫(CJFD)－文史哲專輯", lang: "中文", college: "語文", price: 20, isNew: false },
+  { id: 26, name: "中華徵信所全方位企業資料庫", lang: "中文", college: "商、智產", price: 41, isNew: false },
+  { id: 27, name: "日經 TELECOM", lang: "日文", college: "語文、商", price: 14, isNew: false },
+  { id: 28, name: "Endnote 書目管理軟體", lang: "西文", college: "綜合", price: 34, isNew: false },
+  { id: 29, name: "Turnitin 論文原創性比對系統", lang: "西文", college: "綜合", price: 67, isNew: false },
+  { id: 30, name: "未來流通研究所：流通產業圖解情報庫 & 關鍵數據庫", lang: "中文", college: "商、資通、智產", price: 15, isNew: false },
+  { id: 31, name: "Workspace 資料庫（原 Datastream/LSEG）", lang: "西文", college: "商", price: 82, isNew: false },
+  { id: 32, name: "台灣經濟新報資料庫 116 年資料更新", lang: "中文", college: "商", price: 66, isNew: false },
+  { id: 33, name: "台灣經濟新報－TESG 永續資料集旗艦版", lang: "中文", college: "商", price: 41, isNew: false },
+  { id: 34, name: "台灣經濟新報－TESG 永續發展指標", lang: "中文", college: "商", price: 27, isNew: false },
+  { id: 35, name: "台灣經濟新報－證券市場交易暨衍生性商品等（4種）", lang: "中文", college: "商", price: 24, isNew: false },
+  { id: 36, name: "Business Source Elite (BSE)-EBSCO", lang: "西文", college: "商、智產", price: 48, isNew: true },
+  { id: 37, name: "朝日新聞", lang: "日文", college: "語文", price: 7, isNew: true },
+  { id: 38, name: "SYMSKAN 神隼比對服務", lang: "中文", college: "綜合", price: 16, isNew: true },
+  { id: 39, name: "Turnitin 英文 AI 寫作偵測功能", lang: "西文", college: "綜合", price: 31, isNew: true },
+  { id: 40, name: "快刀中英文 AI 文章辨識系統", lang: "中文", college: "綜合", price: 13, isNew: true },
+];
+
+const TOTAL_VOTES = 40;
+const votes = new Array(41).fill(0); // index 1-40
+
+function totalUsed() {
+  return votes.reduce((a, b) => a + b, 0);
+}
+
+function updateUI() {
+  const used = totalUsed();
+  const remain = TOTAL_VOTES - used;
+  const over = used > TOTAL_VOTES;
+
+  document.getElementById('usedPts').textContent = used;
+  document.getElementById('usedPts').className = 'used' + (over ? ' over' : '');
+  document.getElementById('remainPts').textContent = remain >= 0 ? remain : `超過 ${-remain}`;
+  document.getElementById('remainPts').className = 'remain' + (over ? ' over' : '');
+  document.getElementById('progressBar').style.width = Math.min(100, (used / TOTAL_VOTES) * 100) + '%';
+  document.getElementById('progressBar').className = 'progress-bar' + (over ? ' over' : '');
+
+  const canSubmit = used === TOTAL_VOTES;
+  document.getElementById('submitBtn').disabled = !canSubmit;
+}
+
+function buildCards() {
+  const container = document.getElementById('cardsContainer');
+  
+  const existingSection = document.createElement('div');
+  existingSection.innerHTML = '<div class="section-label">序號 1–35　現有資料庫</div><div class="cards" id="existingCards"></div>';
+  container.appendChild(existingSection);
+
+  const newSection = document.createElement('div');
+  newSection.innerHTML = '<div class="section-label">序號 36–40　新增評估（無使用統計）</div><div class="cards" id="newCards"></div>';
+  container.appendChild(newSection);
+
+  databases.forEach(db => {
+    const card = document.createElement('div');
+    card.className = 'card' + (db.isNew ? ' new-item' : '');
+    card.id = `card-${db.id}`;
+
+    card.innerHTML = `
+      <div class="card-num">${String(db.id).padStart(2,'0')}</div>
+      <div class="card-info">
+        <div class="card-name">${db.name}</div>
+        <div class="card-tags">
+          <span class="tag tag-lang">${db.lang}</span>
+          <span class="tag tag-college">${db.college}</span>
+          <span class="tag tag-price">約 ${db.price} 萬</span>
+          ${db.isNew ? '<span class="tag tag-new">新</span>' : ''}
+        </div>
+      </div>
+      <div class="stepper">
+        <button class="minus" onclick="changeVote(${db.id}, -1)" aria-label="減少">−</button>
+        <span class="val" id="val-${db.id}">0</span>
+        <button class="plus" onclick="changeVote(${db.id}, 1)" aria-label="增加">＋</button>
+      </div>
+    `;
+
+    const target = db.isNew ? document.getElementById('newCards') : document.getElementById('existingCards');
+    target.appendChild(card);
+  });
+}
+
+function changeVote(id, delta) {
+  const newVal = votes[id] + delta;
+  if (newVal < 0) return;
+  const currentTotal = totalUsed();
+  if (delta > 0 && currentTotal >= TOTAL_VOTES) return; // prevent exceed
+  votes[id] = newVal;
+
+  const valEl = document.getElementById(`val-${id}`);
+  valEl.textContent = newVal;
+  valEl.className = 'val' + (newVal > 0 ? ' nonzero' : '');
+
+  const card = document.getElementById(`card-${id}`);
+  const isNew = databases.find(d => d.id === id).isNew;
+  if (newVal > 0) {
+    card.className = 'card active' + (isNew ? ' new-item' : '');
+  } else {
+    card.className = 'card' + (isNew ? ' new-item' : '');
+  }
+
+  updateUI();
+}
+
+// Validate respondent fields
+function validateRespondent() {
+  const name = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let valid = true;
+
+  if (!name) {
+    document.getElementById('inputName').classList.add('error');
+    document.getElementById('errName').classList.add('show');
+    valid = false;
+  } else {
+    document.getElementById('inputName').classList.remove('error');
+    document.getElementById('errName').classList.remove('show');
+  }
+  if (!email || !emailRe.test(email)) {
+    document.getElementById('inputEmail').classList.add('error');
+    document.getElementById('errEmail').classList.add('show');
+    valid = false;
+  } else {
+    document.getElementById('inputEmail').classList.remove('error');
+    document.getElementById('errEmail').classList.remove('show');
+  }
+  return valid;
+}
+
+// Clear error on input
+document.getElementById('inputName').addEventListener('input', () => {
+  document.getElementById('inputName').classList.remove('error');
+  document.getElementById('errName').classList.remove('show');
+});
+document.getElementById('inputEmail').addEventListener('input', () => {
+  document.getElementById('inputEmail').classList.remove('error');
+  document.getElementById('errEmail').classList.remove('show');
+});
+
+// Submit
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const used = totalUsed();
+  if (used !== TOTAL_VOTES) return;
+  if (!validateRespondent()) {
+    document.getElementById('inputName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const name = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+
+  // Build modal
+  const items = databases.filter(db => votes[db.id] > 0);
+  const modalItems = document.getElementById('modalItems');
+  document.getElementById('modalRespondent').innerHTML =
+    `<strong>姓名：</strong>${name}<br><strong>電子郵件：</strong>${email}`;
+  modalItems.innerHTML = items.map(db => `
+    <div class="modal-item">
+      <span class="modal-item-name">${db.id}. ${db.name}</span>
+      <span class="modal-item-pts">${votes[db.id]}</span>
+    </div>
+  `).join('');
+  document.getElementById('modalTotal').textContent = `${used} 票`;
+  document.getElementById('modalOverlay').classList.add('show');
+});
+
+document.getElementById('btnCancel').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('show');
+});
+
+document.getElementById('btnConfirm').addEventListener('click', async () => {
+  document.getElementById('modalOverlay').classList.remove('show');
+  const name = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+
+  // Disable confirm button to prevent double submit
+  document.getElementById('btnConfirm').disabled = true;
+  document.getElementById('btnConfirm').textContent = '送出中…';
+
+  // Prepare vote data (index 1-40)
+  const voteData = databases.map(db => votes[db.id]);
+
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwznY0OpACMQkDp7v6TUMkjO1rrT693KAC0Uksb96S0XbmQ6C4DER2zsHlGGB3urKiF/exec';
+
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, votes: voteData })
+    });
+  } catch (err) {
+    console.error('送出失敗', err);
+  }
+
+  // Show success regardless (no-cors cannot read response)
+  const items = databases.filter(db => votes[db.id] > 0);
+  document.getElementById('successDetail').innerHTML =
+    `<div class="success-detail-item"><span>姓名</span><span>${name}</span></div>` +
+    `<div class="success-detail-item"><span>電子郵件</span><span style="word-break:break-all">${email}</span></div>` +
+    items.map(db => `
+    <div class="success-detail-item">
+      <span>${db.name}</span>
+      <span>${votes[db.id]} 票</span>
+    </div>
+  `).join('');
+  document.getElementById('successScreen').classList.add('show');
+});
+
+buildCards();
+updateUI();
+</script>
+</body>
+</html>
