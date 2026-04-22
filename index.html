@@ -483,7 +483,7 @@
   <h1>臺中科技大學圖書館<br>116年資料庫訂購需求調查</h1>
   <div class="points-badge">
     <span class="used" id="usedPts">0</span>
-    <span class="label">已使用 / 40 票</span>
+    <span class="label">已使用 / 20 點</span>
   </div>
 </div>
 <div class="progress-wrap">
@@ -492,18 +492,18 @@
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-title">116 年資料庫採購投票</div>
+  <div class="hero-title">116 年資料庫採購調查</div>
   <div class="hero-meta">
-    114學年第2學期本校圖書諮詢委員會將於五月上旬召開，本問卷將統計本系教師的資料庫訂購偏好，排序前20名的資料庫將成為本系的建議購置清單，在此問卷中每位老師共有 <strong>40點</strong>，可自由分配給屬意的資料庫，獲得點數越高的資料庫代表愈優先建議採購。各資料庫適用領域與預估價格均顯示於選項中。
+    114學年第2學期本校圖書諮詢委員會將於五月上旬召開，本問卷將統計本系教師的資料庫訂購偏好，排除未獲任何一點的資料庫後，排序前20名的資料庫將成為本系的建議購置清單，在此問卷中每位老師共有 <strong>20點</strong>，可自由分配給屬意的資料庫，獲得點數越高的資料庫代表越優先建議採購。各資料庫適用學院與預估價格均顯示於選項中。
   </div>
 </div>
 
 <!-- Instructions -->
 <div class="instructions">
   <ol>
-    <li>共有 40 個資料庫選項，您有 <strong>40 票</strong>可分配</li>
-    <li>每個資料庫可投 0 票或多票，無單項上限</li>
-    <li>所有選項票數加總<strong>必須恰好等於 40 票</strong></li>
+    <li>共有 40 個資料庫選項，您有 <strong>20 點</strong>可分配</li>
+    <li>每個資料庫可給 0 點或多點，無單項上限</li>
+    <li>所有選項點數加總<strong>必須恰好等於 20 點</strong></li>
     <li>請於2026年5月4日中午12點前填寫完畢</li>
   </ol>
   <div class="new-note">⚠ 序號 36–40（標示「新」）為 115 年期間未訂購／未使用之資料庫，目前無使用統計數據</div>
@@ -532,21 +532,21 @@
 <!-- Submit bar -->
 <div class="submit-bar">
   <div class="submit-info">
-    <span>剩餘票數</span>
-    <span class="remain" id="remainPts">40</span>
+    <span>剩餘點數</span>
+    <span class="remain" id="remainPts">20</span>
   </div>
-  <button class="submit-btn" id="submitBtn" disabled>確認送出投票</button>
+  <button class="submit-btn" id="submitBtn" disabled>確認送出</button>
 </div>
 
 <!-- Confirm Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2>📋 確認投票內容</h2>
+    <h2>📋 確認填答內容</h2>
     <div class="modal-respondent" id="modalRespondent"></div>
     <div id="modalItems"></div>
     <div class="modal-total">
-      <span>合計票數</span>
-      <span id="modalTotal">0 票</span>
+      <span>合計點數</span>
+      <span id="modalTotal">0 點</span>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnCancel">返回修改</button>
@@ -558,8 +558,8 @@
 <!-- Success -->
 <div class="success-screen" id="successScreen">
   <div class="success-icon">🎉</div>
-  <h2>投票完成！</h2>
-  <p>感謝您的投票<br>您的選票已成功送出</p>
+  <h2>填答完成！</h2>
+  <p>感謝您的填答<br>您的答案已成功送出</p>
   <div class="success-detail" id="successDetail"></div>
 </div>
 
@@ -607,7 +607,7 @@ const databases = [
   { id: 40, name: "快刀中英文 AI 文章辨識系統", lang: "中文", college: "綜合", price: 13, isNew: true },
 ];
 
-const TOTAL_VOTES = 40;
+const TOTAL_VOTES = 20;
 const votes = new Array(41).fill(0); // index 1-40
 
 function totalUsed() {
@@ -750,7 +750,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
       <span class="modal-item-pts">${votes[db.id]}</span>
     </div>
   `).join('');
-  document.getElementById('modalTotal').textContent = `${used} 票`;
+  document.getElementById('modalTotal').textContent = `${used} 點`;
   document.getElementById('modalOverlay').classList.add('show');
 });
 
@@ -791,7 +791,7 @@ document.getElementById('btnConfirm').addEventListener('click', async () => {
     items.map(db => `
     <div class="success-detail-item">
       <span>${db.name}</span>
-      <span>${votes[db.id]} 票</span>
+      <span>${votes[db.id]} 點</span>
     </div>
   `).join('');
   document.getElementById('successScreen').classList.add('show');
